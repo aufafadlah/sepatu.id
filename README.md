@@ -1,59 +1,155 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sepatu.id — Website E-Commerce Sepatu
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Website katalog & e-commerce sepatu (1 brand) yang dibangun sebagai tugas
+sekolah, menggunakan Laravel 11, Breeze (Blade), dan Tailwind CSS.
+Project ini mensimulasikan sistem role-based access control (RBAC) dengan 5
+peran berbeda, meniru struktur tim retail sungguhan.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Deskripsi Project
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Sepatu.id** adalah platform belanja sepatu online yang memungkinkan pelanggan
+untuk browsing katalog, filter produk berdasarkan kategori/ukuran/harga,
+menambahkan ke wishlist, checkout, dan memberikan ulasan. Di sisi lain, tim
+internal toko (admin) memiliki panel khusus sesuai tanggung jawab masing-masing.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Latar Belakang Masalah
+1. Toko sepatu kecil-menengah sering belum punya katalog online yang rapi.
+2. Pengelolaan stok, produk, dan pesanan sering dipegang satu orang saja,
+   padahal idealnya dipisah sesuai tanggung jawab (produk, gudang, pesanan).
+3. Pelanggan sulit memverifikasi keaslian ulasan produk.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🧩 Fitur Utama
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Sisi Pelanggan (Publik)
+- Katalog produk dengan filter kombinasi (kategori, ukuran, rentang harga, pencarian)
+- Detail produk dengan pilihan ukuran & indikator stok per ukuran
+- Wishlist
+- Keranjang belanja & checkout
+- Riwayat pesanan dengan tracking status
+- Rating & ulasan (khusus pembeli terverifikasi)
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Sisi Admin (5 Role)
+| Role | Tanggung Jawab |
+|---|---|
+| **Super Admin** | Kontrol penuh, kelola akun admin, laporan lengkap |
+| **Admin Produk** | CRUD produk, kategori, varian ukuran |
+| **Admin Gudang** | Kelola stok fisik per varian ukuran |
+| **Admin Pesanan** | Kelola status pesanan & moderasi ulasan |
+| **User** | Pelanggan biasa |
 
-## Agentic Development
+### Fitur Unggulan
+- Activity log — mencatat setiap aksi penting admin (audit trail)
+- Notifikasi stok menipis otomatis
+- Filter katalog real-time tanpa reload penuh (Alpine.js)
+- Review terverifikasi pembelian
+- Export laporan penjualan ke PDF
+- Rekomendasi produk terkait
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
+
+## 🛠️ Tech Stack
+
+| Kebutuhan | Teknologi |
+|---|---|
+| Backend framework | Laravel 11 |
+| Autentikasi | Laravel Breeze (Blade) |
+| Styling | Tailwind CSS |
+| Interaktivitas frontend | Alpine.js |
+| Database | MySQL |
+| Export PDF | barryvdh/laravel-dompdf |
+| Grafik dashboard | Chart.js |
+
+---
+
+## 📂 Struktur Database
+
+Tabel utama: `users`, `categories`, `products`, `product_variants`,
+`wishlists`, `carts`, `orders`, `order_items`, `reviews`, `activity_logs`.
+
+Lihat detail skema & relasi di [`docs/database.md`](docs/database.md).
+
+---
+
+## 🚀 Instalasi & Menjalankan Project
+
+### Prasyarat
+- PHP >= 8.2
+- Composer
+- Node.js & npm
+- MySQL
+
+### Sepatu.id Instalasi
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone repository
+git clone https://github.com/username/sepatu-id.git
+cd sepatu-id
 
-php artisan boost:install
+# 2. Install dependency PHP
+composer install
+
+# 3. Install dependency JS
+npm install
+
+# 4. Salin file environment
+cp .env.example .env
+php artisan key:generate
+
+# 5. Atur koneksi database di file .env
+# DB_DATABASE=sepatu_id_db
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# 6. Jalankan migration & seeder
+php artisan migrate --seed
+
+# 7. Jalankan development server
+npm run dev
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Akses di `http://127.0.0.1:8000`.
 
-## Contributing
+### Akun Default (dari Seeder)
+| Role | Email | Password |
+|---|---|---|
+| Super Admin | superadmin@sepatu-id.test | password |
+| Admin Produk | adminproduk@sepatu-id.test | password |
+| Admin Gudang | admingudang@sepatu-id.test | password |
+| Admin Pesanan | adminpesanan@sepatu-id.test | password |
+| Pelanggan | user@sepatu-id.test | password |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Struktur Branch Git
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Branch | Fungsi |
+|---|---|
+| `main` | Kode stabil, siap didemo/dikumpulkan |
+| `develop` | Branch kerja utama, gabungan semua fitur |
+| `feature/*` | Satu branch per fitur |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Screenshot
 
-## License
+_Tambahkan screenshot halaman utama, detail produk, dan dashboard admin di sini
+setelah UI selesai dibuat._
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# sepatu.id
+---
+
+## Dikerjakan oleh
+
+Nama: Aufa fadilah
+Kelas: 12 RPL 2
+Tugas: PWP
+
+---
+
+## 📄 Lisensi
+
+Project ini dibuat untuk keperluan tugas sekolah.
