@@ -11,10 +11,19 @@ class CategoryController extends Controller
     /**
      * Tampilkan daftar kategori produk.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::withCount('products')->latest()->get();
-        return view('admin.categories.index', compact('categories'));
+        $query = Category::withCount('products');
+
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $categories = $query->latest()->paginate(10)->withQueryString();
+        $totalCategories = Category::count();
+
+        return view('admin.categories.index', compact('categories', 'totalCategories'));
     }
 
     /**
@@ -44,23 +53,23 @@ class CategoryController extends Controller
     /**
      * Form edit kategori.
      */
-    public function edit(Category $kategori)
+    public function edit(Category $category)
     {
-        return view('admin.categories.edit', ['category' => $kategori]);
+        return view('admin.categories.edit', compact('category'));
     }
 
     /**
      * Perbarui data kategori.
      */
-    public function update(Request $request, Category $kategori)
+    public function update(Request $request, Category $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name,' . $kategori->id,
+            'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
         ]);
 
-        $kategori->update($validated);
+        $category->update($validated);
 
-        auth()->user()->logActivity('update_category', "Mengubah nama kategori menjadi: {$kategori->name}");
+        auth()->user()->logActivity('update_category', "Mengubah nama kategori menjadi: {$category->name}");
 
         return redirect()->route('admin.produk.kategori.index')->with('success', 'Kategori berhasil diperbarui!');
     }
@@ -68,14 +77,14 @@ class CategoryController extends Controller
     /**
      * Hapus kategori.
      */
-    public function destroy(Category $kategori)
+    public function destroy(Category $category)
     {
-        if ($kategori->products()->count() > 0) {
+        if ($category->products()->count() > 0) {
             return back()->with('error', 'Kategori tidak dapat dihapus karena masih memiliki produk terkait.');
         }
 
-        $name = $kategori->name;
-        $kategori->delete();
+        $name = $category->name;
+        $category->delete();
 
         auth()->user()->logActivity('delete_category', "Menghapus kategori: {$name}");
 

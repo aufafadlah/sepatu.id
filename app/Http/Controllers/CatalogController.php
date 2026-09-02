@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
@@ -14,6 +15,10 @@ class CatalogController extends Controller
      */
     public function index(Request $request)
     {
+        if (auth()->check() && auth()->user()->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $query = Product::with(['category', 'variants', 'reviews']);
 
         // Filter Pencarian Keyword
@@ -67,6 +72,17 @@ class CatalogController extends Controller
         $categories = Category::withCount('products')->get();
         $availableSizes = ProductVariant::distinct()->pluck('size')->sort()->values();
 
+        // AJAX request → return partial HTML
+        if ($request->wantsJson() || $request->ajax()) {
+            $html = view('catalog._product-grid', compact('products'))->render();
+            $pagination = $products->links()->toHtml();
+            return response()->json([
+                'html' => $html,
+                'pagination' => $pagination,
+                'total' => $products->total(),
+            ]);
+        }
+
         return view('catalog.index', compact('products', 'categories', 'availableSizes'));
     }
 
@@ -75,6 +91,10 @@ class CatalogController extends Controller
      */
     public function show(string $slug)
     {
+        if (auth()->check() && auth()->user()->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $product = Product::with(['category', 'variants', 'reviews.user'])
             ->where('slug', $slug)
             ->firstOrFail();
@@ -89,6 +109,20 @@ class CatalogController extends Controller
             ? auth()->user()->wishlists()->where('product_id', $product->id)->exists()
             : false;
 
-        return view('catalog.show', compact('product', 'relatedProducts', 'inWishlist'));
+        // Cek apakah user sudah pernah membeli produk ini (untuk ulasan)
+        $canReview = false;
+        $existingReview = null;
+        if (auth()->check()) {
+            $canReview = Order::where('user_id', auth()->id())
+                ->where('status', Order::STATUS_SELESAI)
+                ->whereHas('items.productVariant', function ($query) use ($product) {
+                    $query->where('product_id', $product->id);
+                })
+                ->exists();
+
+            $existingReview = $product->reviews()->where('user_id', auth()->id())->first();
+        }
+
+        return view('catalog.show', compact('product', 'relatedProducts', 'inWishlist', 'canReview', 'existingReview'));
     }
 }

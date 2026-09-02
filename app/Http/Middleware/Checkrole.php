@@ -27,15 +27,29 @@ class CheckRole
             abort(403, 'Silakan login terlebih dahulu.');
         }
 
-        // roles bisa dikirim sebagai beberapa argumen, atau satu string
-        // dengan koma (misal 'role:super_admin,admin_produk') tergantung cara
-        // Laravel mem-parsing parameter middleware, jadi kita pecah dulu
-        // untuk jaga-jaga.
         $allowedRoles = collect($roles)
             ->flatMap(fn ($role) => explode(',', $role))
             ->map(fn ($role) => trim($role))
             ->filter()
             ->all();
+
+        // Jika halaman mewajibkan role 'admin'
+        if (in_array('admin', $allowedRoles, true)) {
+            if ($user->isAdmin()) {
+                return $next($request);
+            }
+            abort(403, 'Anda tidak memiliki akses ke panel admin.');
+        }
+
+        // Jika halaman mewajibkan role 'user' (fitur belanja pelanggan)
+        if (in_array('user', $allowedRoles, true)) {
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard')->with('warning', 'Akun Administrator tidak dapat melakukan transaksi belanja atau mengakses area pelanggan.');
+            }
+            if ($user->isCustomer()) {
+                return $next($request);
+            }
+        }
 
         if (! in_array($user->role, $allowedRoles, true)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');

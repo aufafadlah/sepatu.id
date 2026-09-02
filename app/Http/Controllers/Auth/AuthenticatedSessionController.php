@@ -30,10 +30,12 @@ class AuthenticatedSessionController extends Controller
 
         $user = auth()->user();
 
+        // Redirect jika admin (role: admin)
         if ($user && $user->isAdmin()) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
+            return redirect()->route('admin.dashboard');
         }
 
+        // Redirect jika pelanggan (role: user)
         return redirect()->intended(route('catalog.index', absolute: false));
     }
 

@@ -11,21 +11,28 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $accounts = [
-            ['name' => 'Super Admin', 'email' => 'superadmin@sepatu-id.test', 'role' => 'super_admin'],
-            ['name' => 'Admin Produk', 'email' => 'adminproduk@sepatu-id.test', 'role' => 'admin_produk'],
-            ['name' => 'Admin Gudang', 'email' => 'admingudang@sepatu-id.test', 'role' => 'admin_gudang'],
-            ['name' => 'Admin Pesanan', 'email' => 'adminpesanan@sepatu-id.test', 'role' => 'admin_pesanan'],
-            ['name' => 'Pelanggan Contoh', 'email' => 'user@sepatu-id.test', 'role' => 'user'],
+            [
+                'name' => 'Administrator',
+                'email' => 'admin@sepatu.id',
+                'role' => 'admin',
+            ],
+            [
+                'name' => 'Pelanggan Store',
+                'email' => 'user@sepatu.id',
+                'role' => 'user',
+            ],
         ];
 
         foreach ($accounts as $account) {
-            User::create([
-                'name' => $account['name'],
-                'email' => $account['email'],
-                'password' => Hash::make('password'),
-                'role' => $account['role'],
-                'email_verified_at' => now(),
-            ]);
+            User::updateOrCreate(
+                ['email' => $account['email']],
+                [
+                    'name' => $account['name'],
+                    'password' => Hash::make('password'),
+                    'role' => $account['role'],
+                    'email_verified_at' => now(),
+                ]
+            );
         }
     }
 }

@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <!-- Hero Showcase Section (Inspired by Sneaker Flare) -->
+    <!-- Hero Showcase Section -->
     <section class="relative bg-[#f5f5f5] text-neutral-900 py-12 lg:py-20 overflow-hidden border-b border-neutral-200/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -12,22 +12,31 @@
                 <!-- Left Content -->
                 <div class="lg:col-span-6 space-y-4 z-10">
                     <span class="inline-block text-[11px] font-extrabold uppercase tracking-widest text-orange-500">
-                        New Concept Collection 2026
+                        {{ \App\Models\SiteSetting::get('hero_badge', 'New Concept Collection 2026') }}
                     </span>
 
                     <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter uppercase leading-none text-neutral-900">
-                        snea<span class="text-orange-500">.</span>ker
+                        @php
+                            $title = \App\Models\SiteSetting::get('hero_title', 'sepatu.id');
+                            if (str_contains(strtolower($title), '.id')) {
+                                $parts = explode('.id', $title, 2);
+                                echo e($parts[0]) . '<span class="text-orange-500">.id</span>' . e($parts[1]);
+                            } else {
+                                echo e($title);
+                            }
+                        @endphp
                     </h1>
 
                     <p class="text-xs sm:text-sm text-neutral-600 font-medium leading-relaxed max-w-md uppercase tracking-wider">
-                        Koleksi Sepatu Sneaker &amp; Streetwear Lokal dengan siluet modern, bantalan empuk, dan kenyamanan aktivitas harian.
+                        {{ \App\Models\SiteSetting::get('hero_subtitle', 'Koleksi Sepatu Sneaker & Streetwear Lokal dengan siluet modern, bantalan empuk, dan kenyamanan aktivitas harian.') }}
                     </p>
 
                     <!-- Search Input -->
-                    <form action="{{ route('catalog.index') }}" method="GET" class="pt-2 max-w-md">
+                    <form action="{{ route('catalog.index') }}" method="GET" id="search-form" class="pt-2 max-w-md">
                         <div class="relative flex items-center">
                             <input type="text"
                                    name="search"
+                                   id="search-input"
                                    value="{{ request('search') }}"
                                    placeholder="Cari nama sepatu, warna, atau seri..."
                                    class="w-full pl-4 pr-24 py-3 rounded-full bg-white text-neutral-900 placeholder-neutral-400 text-xs font-medium border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-neutral-900 shadow-2xs">
@@ -39,7 +48,7 @@
                     </form>
                 </div>
 
-                <!-- Right Hero Image Showcase -->
+                <!-- Right Hero Showcase (Vector SVG illustration - fixed broken image) -->
                 <div class="lg:col-span-6 relative flex items-center justify-center">
                     <!-- Giant Watermark Background Text -->
                     <span class="absolute inset-0 flex items-center justify-center font-black text-7xl sm:text-8xl lg:text-9xl text-neutral-300/40 uppercase tracking-tighter pointer-events-none select-none">
@@ -47,20 +56,25 @@
                     </span>
 
                     <div class="relative z-10 h-72 sm:h-80 lg:h-96 flex items-center justify-center p-4">
-                        <img src="https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=900&q=80"
-                             alt="Sneaker Showcase"
-                             class="max-h-full object-contain filter drop-shadow-2xl hover:scale-105 transition duration-500 cursor-pointer">
-                    </div>
+                        <svg class="max-h-full max-w-full drop-shadow-2xl hover:scale-105 transition duration-500 cursor-pointer text-neutral-900" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M480 352C480 369.7 465.7 384 448 384H64C28.7 384 0 355.3 0 320V240C0 231.2 7.2 224 16 224H48C56.8 224 64 216.8 64 208V176C64 140.7 92.7 112 128 112H200C222.1 112 242.7 123.4 254.4 142.1L288 196H384C437 196 480 239 480 292V352Z" fill="#18181b"/>
+                            <path d="M384 196H288L254.4 142.1C242.7 123.4 222.1 112 200 112H128C92.7 112 64 140.7 64 176V208C64 216.8 56.8 224 48 224H16C7.2 224 0 231.2 0 240V320C0 355.3 28.7 384 64 384H448C465.7 384 480 369.7 480 352V292C480 239 437 196 384 196Z" stroke="#f97316" stroke-width="12" stroke-linejoin="round"/>
+                            <circle cx="160" cy="272" r="20" fill="#f97316"/>
+                            <circle cx="240" cy="272" r="20" fill="#f97316"/>
+                            <circle cx="320" cy="272" r="20" fill="#f97316"/>
+                            <path d="M64 384H448C465.7 384 480 369.7 480 352V336H32C32 362.5 46.3 384 64 384Z" fill="#f97316"/>
+                        </svg>
+                    </div> 
                 </div>
 
             </div>
         </div>
     </section>
 
-    <!-- Featured Products Section with Watermark Header -->
+    <!-- Featured Products Section -->
     <section id="katalog" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
 
-        <!-- Watermark Header Component -->
+        <!-- Watermark Header -->
         <div class="relative text-center mb-12 select-none overflow-hidden py-4">
             <span class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-black text-6xl sm:text-7xl lg:text-9xl text-neutral-200/50 uppercase tracking-widest whitespace-nowrap pointer-events-none">
                 SNEAKER
@@ -75,16 +89,18 @@
         <!-- Filter Controls (Category & Size Pills) -->
         <div class="space-y-4 mb-10">
 
-            <!-- Category Pills -->
+            <!-- Category Pills (AJAX Intercept) -->
             <div id="kategori" class="flex items-center justify-center flex-wrap gap-2">
                 <a href="{{ route('catalog.index') }}"
-                   class="px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition {{ !request('category') ? 'bg-neutral-900 text-white shadow-xs' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border border-neutral-200' }}">
+                   data-category=""
+                   class="category-pill px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition {{ !request('category') ? 'bg-neutral-900 text-white shadow-xs' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border border-neutral-200' }}">
                     Semua Produk
                 </a>
 
                 @foreach($categories as $cat)
                     <a href="{{ route('catalog.index', array_merge(request()->query(), ['category' => $cat->id])) }}"
-                       class="px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition flex items-center gap-1.5 {{ request('category') == $cat->id ? 'bg-neutral-900 text-white shadow-xs' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border border-neutral-200' }}">
+                       data-category="{{ $cat->id }}"
+                       class="category-pill px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition flex items-center gap-1.5 {{ request('category') == $cat->id ? 'bg-neutral-900 text-white shadow-xs' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border border-neutral-200' }}">
                         <span>{{ $cat->name }}</span>
                         <span class="text-[10px] opacity-75">({{ $cat->products_count }})</span>
                     </a>
@@ -93,33 +109,25 @@
 
             <!-- Size Filter Pills & Sorting -->
             <div class="bg-[#f8f8f8] p-4 rounded-2xl border border-neutral-200 flex flex-wrap items-center justify-between gap-4 text-xs">
-                <div class="flex flex-wrap items-center gap-1.5">
+                <div class="flex flex-wrap items-center gap-1.5" id="size-filters">
                     <span class="font-bold text-neutral-700 uppercase tracking-wider mr-1 text-[11px]">Ukuran:</span>
                     <a href="{{ route('catalog.index', request()->except('size')) }}"
-                       class="px-3 py-1 rounded-full text-xs font-bold transition {{ !request('size') ? 'bg-neutral-900 text-white' : 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100' }}">
+                       data-size=""
+                       class="size-pill px-3 py-1 rounded-full text-xs font-bold transition {{ !request('size') ? 'bg-neutral-900 text-white' : 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100' }}">
                         Semua
                     </a>
                     @foreach($availableSizes as $sz)
                         <a href="{{ route('catalog.index', array_merge(request()->query(), ['size' => $sz])) }}"
-                           class="px-3 py-1 rounded-full text-xs font-bold transition {{ request('size') == $sz ? 'bg-neutral-900 text-white' : 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100' }}">
+                           data-size="{{ $sz }}"
+                           class="size-pill px-3 py-1 rounded-full text-xs font-bold transition {{ request('size') == $sz ? 'bg-neutral-900 text-white' : 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100' }}">
                             {{ $sz }}
                         </a>
                     @endforeach
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <form action="{{ route('catalog.index') }}" method="GET" class="flex items-center gap-2">
-                        @if(request('search'))
-                            <input type="hidden" name="search" value="{{ request('search') }}">
-                        @endif
-                        @if(request('category'))
-                            <input type="hidden" name="category" value="{{ request('category') }}">
-                        @endif
-                        @if(request('size'))
-                            <input type="hidden" name="size" value="{{ request('size') }}">
-                        @endif
-
-                        <select name="sort" onchange="this.form.submit()" class="text-xs font-bold uppercase tracking-wider border-neutral-300 rounded-full bg-white py-1.5 px-4 focus:ring-neutral-900">
+                    <form action="{{ route('catalog.index') }}" method="GET" id="sort-form" class="flex items-center gap-2">
+                        <select name="sort" id="sort-select" class="text-xs font-bold uppercase tracking-wider border-neutral-300 rounded-full bg-white py-1.5 px-4 focus:ring-neutral-900">
                             <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
                             <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Harga: Terendah</option>
                             <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Harga: Tertinggi</option>
@@ -127,118 +135,41 @@
                         </select>
                     </form>
 
-                    @if(request()->hasAny(['search', 'category', 'size', 'sort']))
-                        <a href="{{ route('catalog.index') }}" class="text-xs font-bold text-rose-600 hover:text-rose-700 uppercase tracking-wider">
-                            Reset
-                        </a>
-                    @endif
+                    <a href="{{ route('catalog.index') }}" id="reset-filter-btn" class="{{ request()->hasAny(['search', 'category', 'size', 'sort']) ? '' : 'hidden' }} text-xs font-bold text-rose-600 hover:text-rose-700 uppercase tracking-wider">
+                        Reset
+                    </a>
                 </div>
             </div>
 
         </div>
 
-        <!-- Product Grid (Exact Sneaker Flare Style) -->
-        @if($products->isEmpty())
-            <div class="bg-[#f8f8f8] rounded-2xl p-12 text-center max-w-md mx-auto my-8 border border-neutral-200">
-                <h3 class="text-base font-bold text-neutral-900 uppercase tracking-wider">Produk Tidak Ditemukan</h3>
-                <p class="text-xs text-neutral-500 mt-1">Tidak ada produk sepatu yang sesuai dengan kriteria pencarian Anda.</p>
-                <a href="{{ route('catalog.index') }}" class="inline-block mt-4 px-6 py-2.5 rounded-full bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider hover:bg-orange-500 transition">
-                    Lihat Semua Produk
-                </a>
-            </div>
-        @else
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                @foreach($products as $product)
-                    <div class="flex flex-col text-center group">
-
-                        <!-- Image Card Backdrop (Clean Light Grey #f8f8f8) -->
-                        <div class="relative bg-[#f8f8f8] rounded-xl overflow-hidden aspect-square flex items-center justify-center p-6 mb-4 border border-neutral-200/60 group-hover:border-neutral-400 transition duration-300">
-                            
-                            <!-- Small Sale Badge (Italic Serif Style from Sneaker Flare) -->
-                            <div class="absolute top-3 left-3 z-10">
-                                @if($product->isOutOfStock())
-                                    <span class="text-[11px] italic font-serif text-neutral-900 font-bold bg-white/90 px-2 py-0.5 rounded shadow-2xs">
-                                        habis!
-                                    </span>
-                                @elseif($product->isNew())
-                                    <span class="text-[11px] italic font-serif text-orange-600 font-bold bg-white/90 px-2 py-0.5 rounded shadow-2xs">
-                                        sale!
-                                    </span>
-                                @endif
-                            </div>
-
-                            <!-- Wishlist Toggle -->
-                            @auth
-                                <form action="{{ route('wishlist.toggle', $product) }}" method="POST" class="absolute top-3 right-3 z-10">
-                                    @csrf
-                                    @php
-                                        $inWishlist = auth()->user()->wishlists()->where('product_id', $product->id)->exists();
-                                    @endphp
-                                    <button type="submit" class="w-7 h-7 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-2xs transition active:scale-95">
-                                        <svg class="w-3.5 h-3.5 {{ $inWishlist ? 'text-rose-500 fill-rose-500' : 'text-neutral-400 hover:text-rose-500' }}" viewBox="0 0 24 24" fill="{{ $inWishlist ? 'currentColor' : 'none' }}" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            @endauth
-
-                            <!-- Product Image -->
-                            <a href="{{ route('catalog.show', $product->slug) }}" class="w-full h-full flex items-center justify-center">
-                                @if($product->image)
-                                    <img src="{{ Str::startsWith($product->image, ['http://', 'https://']) ? $product->image : asset('storage/' . $product->image) }}"
-                                         alt="{{ $product->name }}"
-                                         class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-500">
-                                @else
-                                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80"
-                                         alt="{{ $product->name }}"
-                                         class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-500">
-                                @endif
-                            </a>
-                        </div>
-
-                        <!-- Card Info -->
-                        <div class="space-y-1.5 px-2">
-                            <h3 class="font-bold text-neutral-900 text-xs sm:text-sm uppercase tracking-tight hover:text-orange-500 transition line-clamp-1">
-                                <a href="{{ route('catalog.show', $product->slug) }}">
-                                    {{ $product->name }}
-                                </a>
-                            </h3>
-
-                            <!-- Rating Stars (★★★★☆) -->
-                            <div class="text-[11px] text-amber-500 font-bold tracking-widest">
-                                ★★★★☆ <span class="text-neutral-400 font-normal text-[10px]">({{ number_format($product->averageRating() ?? 5.0, 1) }})</span>
-                            </div>
-
-                            <!-- Price -->
-                            <div class="pt-1">
-                                <p class="text-xs font-extrabold text-neutral-900">
-                                    Rp {{ number_format($product->price, 0, ',', '.') }}
-                                </p>
-                            </div>
-
-                            <!-- Size Indicators -->
-                            <div class="pt-1 flex flex-wrap justify-center gap-1">
-                                @foreach($product->variants->where('stock', '>', 0)->take(5) as $variant)
-                                    <span class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 font-bold text-[9px] border border-neutral-200">
-                                        {{ $variant->size }}
-                                    </span>
-                                @endforeach
-                            </div>
-                        </div>
-
-                    </div>
-                @endforeach
+        <!-- Product Grid Wrapper for AJAX -->
+        <div class="relative">
+            <!-- Loading Overlay -->
+            <div id="grid-loading" class="hidden absolute inset-0 bg-white/70 backdrop-blur-xs z-20 flex items-center justify-center rounded-2xl">
+                <div class="flex items-center gap-2 text-xs font-extrabold uppercase text-neutral-900">
+                    <svg class="animate-spin h-5 w-5 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Memuat Produk...
+                </div>
             </div>
 
-            <!-- Outlined Pill Button (Inspired by Sneaker Flare "VIEW ALL PRODUCTS") -->
-            <div class="mt-14 text-center">
-                {{ $products->links() }}
+            <!-- Product Grid Container -->
+            <div id="product-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                @include('catalog._product-grid', ['products' => $products])
             </div>
-        @endif
+        </div>
+
+        <!-- Pagination Container -->
+        <div id="pagination-container" class="mt-14 text-center">
+            {{ $products->links() }}
+        </div>
 
     </section>
 
-    <!-- Best Seller Watermark Section -->
+    <!-- Best Seller Watermark Section (CMS Editable) -->
     <section class="bg-[#f9f9f9] border-t border-neutral-200 py-16 relative overflow-hidden">
         <!-- Giant Background Watermark -->
         <span class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-black text-6xl sm:text-7xl lg:text-9xl text-neutral-200/60 uppercase tracking-widest whitespace-nowrap pointer-events-none select-none">
@@ -252,23 +183,258 @@
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-neutral-600 font-medium">
                 <div class="p-6 bg-white rounded-2xl border border-neutral-200 shadow-2xs space-y-2">
-                    <h4 class="font-black text-neutral-900 uppercase tracking-wider text-xs">100% Original Quality</h4>
-                    <p class="text-neutral-500 leading-relaxed">Pilihan material sepatu kelas atas dengan durabilitas tinggi.</p>
+                    <h4 class="font-black text-neutral-900 uppercase tracking-wider text-xs">{{ \App\Models\SiteSetting::get('feature_1_title', '100% Original Quality') }}</h4>
+                    <p class="text-neutral-500 leading-relaxed">{{ \App\Models\SiteSetting::get('feature_1_desc', 'Pilihan material sepatu kelas atas dengan durabilitas tinggi.') }}</p>
                 </div>
                 <div class="p-6 bg-white rounded-2xl border border-neutral-200 shadow-2xs space-y-2">
-                    <h4 class="font-black text-neutral-900 uppercase tracking-wider text-xs">Garansi Tukar Ukuran</h4>
-                    <p class="text-neutral-500 leading-relaxed">Penukaran varian ukuran tanpa ribet hingga 7 hari.</p>
+                    <h4 class="font-black text-neutral-900 uppercase tracking-wider text-xs">{{ \App\Models\SiteSetting::get('feature_2_title', 'Garansi Tukar Ukuran') }}</h4>
+                    <p class="text-neutral-500 leading-relaxed">{{ \App\Models\SiteSetting::get('feature_2_desc', 'Penukaran varian ukuran tanpa ribet hingga 7 hari.') }}</p>
                 </div>
                 <div class="p-6 bg-white rounded-2xl border border-neutral-200 shadow-2xs space-y-2">
-                    <h4 class="font-black text-neutral-900 uppercase tracking-wider text-xs">Ulasan Terverifikasi</h4>
-                    <p class="text-neutral-500 leading-relaxed">Setiap ulasan berasal dari pembeli nyata yang menyelesaikan pesanan.</p>
+                    <h4 class="font-black text-neutral-900 uppercase tracking-wider text-xs">{{ \App\Models\SiteSetting::get('feature_3_title', 'Ulasan Terverifikasi') }}</h4>
+                    <p class="text-neutral-500 leading-relaxed">{{ \App\Models\SiteSetting::get('feature_3_desc', 'Setiap ulasan berasal dari pembeli nyata yang menyelesaikan pesanan.') }}</p>
                 </div>
                 <div class="p-6 bg-white rounded-2xl border border-neutral-200 shadow-2xs space-y-2">
-                    <h4 class="font-black text-neutral-900 uppercase tracking-wider text-xs">Pengiriman Cepat</h4>
-                    <p class="text-neutral-500 leading-relaxed">Pengiriman aman &amp; efisien ke seluruh kota di Indonesia.</p>
+                    <h4 class="font-black text-neutral-900 uppercase tracking-wider text-xs">{{ \App\Models\SiteSetting::get('feature_4_title', 'Pengiriman Cepat') }}</h4>
+                    <p class="text-neutral-500 leading-relaxed">{{ \App\Models\SiteSetting::get('feature_4_desc', 'Pengiriman aman & efisien ke seluruh kota di Indonesia.') }}</p>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- AJAX Script for Category Filter, Real-time Live Search & Pagination without reload -->
+    <script>
+        let currentFilterState = {
+            category: "{{ request('category', '') }}",
+            size: "{{ request('size', '') }}",
+            sort: "{{ request('sort', 'latest') }}",
+            search: "{{ request('search', '') }}",
+            page: "{{ request('page', 1) }}"
+        };
+
+        let searchDebounceTimer = null;
+
+        // Function Toggle Wishlist AJAX (Tanpa Reload)
+        function toggleWishlist(productId, btnElement) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch(`/wishlist/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => {
+                if (res.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    const svg = btnElement.querySelector('svg');
+                    if (data.added) {
+                        svg.classList.remove('text-neutral-400', 'hover:text-rose-500');
+                        svg.classList.add('text-rose-500', 'fill-rose-500');
+                        svg.setAttribute('fill', 'currentColor');
+                    } else {
+                        svg.classList.remove('text-rose-500', 'fill-rose-500');
+                        svg.classList.add('text-neutral-400', 'hover:text-rose-500');
+                        svg.setAttribute('fill', 'none');
+                    }
+                    if (window.showToast) {
+                        window.showToast(data.message, 'success');
+                    }
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        // AJAX Filter & Search Loader
+        function fetchFilteredProducts(resetPage = false, scrollToGrid = false) {
+            const loading = document.getElementById('grid-loading');
+            if (loading) loading.classList.remove('hidden');
+
+            if (resetPage) {
+                currentFilterState.page = 1;
+            }
+
+            const params = new URLSearchParams();
+            if (currentFilterState.category) params.set('category', currentFilterState.category);
+            if (currentFilterState.size) params.set('size', currentFilterState.size);
+            if (currentFilterState.sort && currentFilterState.sort !== 'latest') params.set('sort', currentFilterState.sort);
+            if (currentFilterState.search) params.set('search', currentFilterState.search);
+            if (currentFilterState.page && currentFilterState.page > 1) params.set('page', currentFilterState.page);
+
+            const queryString = params.toString();
+            const fetchUrl = `{{ route('catalog.index') }}${queryString ? '?' + queryString : ''}`;
+
+            fetch(fetchUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const grid = document.getElementById('product-grid-container');
+                const pagination = document.getElementById('pagination-container');
+                if (grid) grid.innerHTML = data.html;
+                if (pagination) pagination.innerHTML = data.pagination;
+                
+                // Update URL browser tanpa reload
+                window.history.pushState(currentFilterState, '', fetchUrl);
+
+                // Show/hide reset button
+                const resetBtn = document.getElementById('reset-filter-btn');
+                if (resetBtn) {
+                    if (currentFilterState.category || currentFilterState.size || currentFilterState.search || (currentFilterState.sort && currentFilterState.sort !== 'latest')) {
+                        resetBtn.classList.remove('hidden');
+                    } else {
+                        resetBtn.classList.add('hidden');
+                    }
+                }
+
+                if (scrollToGrid) {
+                    const katalogSec = document.getElementById('katalog');
+                    if (katalogSec) {
+                        katalogSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            })
+            .catch(err => console.error(err))
+            .finally(() => {
+                if (loading) loading.classList.add('hidden');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Real-time Live Search as user types
+            const searchInput = document.getElementById('search-input');
+            const searchForm = document.getElementById('search-form');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    clearTimeout(searchDebounceTimer);
+                    currentFilterState.search = this.value.trim();
+                    searchDebounceTimer = setTimeout(() => {
+                        fetchFilteredProducts(true);
+                    }, 250);
+                });
+            }
+
+            if (searchForm) {
+                searchForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    clearTimeout(searchDebounceTimer);
+                    if (searchInput) currentFilterState.search = searchInput.value.trim();
+                    fetchFilteredProducts(true, true);
+                });
+            }
+
+            // 2. Seamless AJAX Pagination Intercept
+            const paginationContainer = document.getElementById('pagination-container');
+            if (paginationContainer) {
+                paginationContainer.addEventListener('click', function (e) {
+                    const link = e.target.closest('a');
+                    if (!link) return;
+
+                    const href = link.getAttribute('href');
+                    if (href && href !== '#' && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        try {
+                            const urlObj = new URL(href, window.location.origin);
+                            const pageNum = urlObj.searchParams.get('page');
+                            currentFilterState.page = pageNum || 1;
+                            fetchFilteredProducts(false, true);
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }
+                });
+            }
+
+            // 3. Category pills click handler
+            document.querySelectorAll('.category-pill').forEach(pill => {
+                pill.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    currentFilterState.category = this.dataset.category;
+
+                    document.querySelectorAll('.category-pill').forEach(p => {
+                        p.className = 'category-pill px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border border-neutral-200 flex items-center gap-1.5';
+                    });
+                    this.className = 'category-pill px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition bg-neutral-900 text-white shadow-xs flex items-center gap-1.5';
+
+                    fetchFilteredProducts(true);
+                });
+            });
+
+            // 4. Size pills click handler
+            document.querySelectorAll('.size-pill').forEach(pill => {
+                pill.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    currentFilterState.size = this.dataset.size;
+
+                    document.querySelectorAll('.size-pill').forEach(p => {
+                        p.className = 'size-pill px-3 py-1 rounded-full text-xs font-bold transition bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100';
+                    });
+                    this.className = 'size-pill px-3 py-1 rounded-full text-xs font-bold transition bg-neutral-900 text-white';
+
+                    fetchFilteredProducts(true);
+                });
+            });
+
+            // 5. Sort dropdown change handler
+            const sortSelect = document.getElementById('sort-select');
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function () {
+                    currentFilterState.sort = this.value;
+                    fetchFilteredProducts(true);
+                });
+            }
+
+            // 6. Reset filters click handler
+            const resetBtn = document.getElementById('reset-filter-btn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    currentFilterState = {
+                        category: '',
+                        size: '',
+                        sort: 'latest',
+                        search: '',
+                        page: 1
+                    };
+                    if (searchInput) searchInput.value = '';
+                    if (sortSelect) sortSelect.value = 'latest';
+
+                    document.querySelectorAll('.category-pill').forEach((p, idx) => {
+                        p.className = (idx === 0)
+                            ? 'category-pill px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition bg-neutral-900 text-white shadow-xs flex items-center gap-1.5'
+                            : 'category-pill px-5 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider transition bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border border-neutral-200 flex items-center gap-1.5';
+                    });
+
+                    document.querySelectorAll('.size-pill').forEach((p, idx) => {
+                        p.className = (idx === 0)
+                            ? 'size-pill px-3 py-1 rounded-full text-xs font-bold transition bg-neutral-900 text-white'
+                            : 'size-pill px-3 py-1 rounded-full text-xs font-bold transition bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100';
+                    });
+
+                    fetchFilteredProducts(true);
+                });
+            }
+
+            // 7. Browser Back / Forward handler
+            window.addEventListener('popstate', function (e) {
+                if (e.state) {
+                    currentFilterState = e.state;
+                    fetchFilteredProducts(false);
+                }
+            });
+        });
+    </script>
 
 @endsection
