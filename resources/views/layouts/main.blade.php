@@ -21,6 +21,8 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+
+    @stack('styles')
 </head>
 <body class="h-full bg-white text-neutral-900 antialiased flex flex-col selection:bg-neutral-900 selection:text-white">
 
@@ -387,5 +389,6 @@
         };
     </script>
 
+    @stack('scripts')
 </body>
 </html>

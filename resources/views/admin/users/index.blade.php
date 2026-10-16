@@ -24,6 +24,7 @@
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50/70 border-b border-slate-200/80 text-slate-400 uppercase font-semibold tracking-wider text-[10px]">
                         <tr>
+                            <th class="p-4 w-12 text-center">No.</th>
                             <th class="p-4">Nama Pengguna</th>
                             <th class="p-4">Email</th>
                             <th class="p-4">Role Hak Akses</th>
@@ -34,6 +35,9 @@
                     <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
                         @forelse($users as $user)
                             <tr class="hover:bg-slate-50/80 transition">
+                                <td class="p-4 text-center font-bold text-slate-400">
+                                    {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
+                                </td>
                                 <td class="p-4 font-bold text-slate-900">
                                     {{ $user->name }}
                                 </td>

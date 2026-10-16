@@ -71,21 +71,23 @@
                     <table class="w-full text-left text-xs">
                         <thead>
                             <tr class="border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                <th class="pb-2 w-8 text-center">No.</th>
                                 <th class="pb-2">Produk</th>
                                 <th class="pb-2">Ukuran</th>
                                 <th class="pb-2 text-right">Sisa Stok</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 font-medium">
-                            @forelse($lowStockVariants as $variant)
+                            @forelse($lowStockVariants as $index => $variant)
                                 <tr>
+                                    <td class="py-2.5 text-center font-bold text-slate-400">{{ $index + 1 }}</td>
                                     <td class="py-2.5 font-bold text-slate-900">{{ $variant->product->name ?? 'Produk' }}</td>
                                     <td class="py-2.5 text-slate-500">EUR {{ $variant->size }}</td>
                                     <td class="py-2.5 text-right font-bold text-rose-600">{{ $variant->stock }} pasang</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="py-4 text-center text-slate-400 text-xs">Semua varian stok dalam kondisi aman.</td>
+                                    <td colspan="4" class="py-4 text-center text-slate-400 text-xs">Semua varian stok dalam kondisi aman.</td>
                                 </tr>
                             @endforelse
                         </tbody>

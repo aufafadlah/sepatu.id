@@ -35,6 +35,10 @@ class Cart extends Model
 
     public function subtotal()
     {
-        return $this->qty * ($this->productVariant->product->price ?? 0);
+        $product = $this->productVariant->product ?? null;
+        if (!$product) {
+            return 0;
+        }
+        return $this->qty * $product->finalPrice();
     }
 }

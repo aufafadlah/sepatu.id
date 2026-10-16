@@ -107,14 +107,24 @@ Route::middleware(['auth', 'role:admin'])
 
         // Kelola Stok Gudang
         Route::get('/gudang', [StockController::class, 'index'])->name('gudang.index');
+        Route::post('/gudang/variant', [StockController::class, 'storeVariant'])->name('gudang.store-variant');
         Route::patch('/gudang/{variant}', [StockController::class, 'update'])->name('gudang.update');
 
         // Kelola Pesanan
         Route::get('/pesanan', [AdminOrderController::class, 'index'])->name('pesanan.index');
+        Route::get('/pesanan/check-new', [AdminOrderController::class, 'checkNewOrders'])->name('pesanan.check-new');
+        Route::post('/pesanan/auto-cancel', [AdminOrderController::class, 'runAutoCancel'])->name('pesanan.auto-cancel');
         Route::get('/pesanan/{order}', [AdminOrderController::class, 'show'])->name('pesanan.show');
         Route::get('/pesanan/{order}/cetak-alamat', [AdminOrderController::class, 'printAddress'])->name('pesanan.print-address');
         Route::patch('/pesanan/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('pesanan.update-status');
         Route::patch('/pesanan/{order}/payment-status', [AdminOrderController::class, 'updatePaymentStatus'])->name('pesanan.update-payment-status');
+        Route::post('/pesanan/{order}/cancel', [AdminOrderController::class, 'cancelOrder'])->name('pesanan.cancel');
+
+        // Modul Laporan Penjualan (Harian, Bulanan, Tahunan, PDF, CSV Ekspor & Impor)
+        Route::get('/laporan', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('laporan.index');
+        Route::get('/laporan/pdf', [\App\Http\Controllers\Admin\ReportController::class, 'downloadPdf'])->name('laporan.pdf');
+        Route::get('/laporan/export-csv', [\App\Http\Controllers\Admin\ReportController::class, 'exportCsv'])->name('laporan.export-csv');
+        Route::post('/laporan/import', [\App\Http\Controllers\Admin\ReportController::class, 'importData'])->name('laporan.import');
 
         // Kelola User Accounts
         Route::resource('/users', AdminUserController::class)->except(['show']);

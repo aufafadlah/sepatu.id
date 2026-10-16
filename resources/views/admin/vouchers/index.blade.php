@@ -63,6 +63,7 @@
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50/70 border-b border-slate-200/80 text-slate-400 uppercase font-semibold tracking-wider text-[10px]">
                         <tr>
+                            <th class="p-4 w-12 text-center">No.</th>
                             <th class="p-4">Kode Voucher</th>
                             <th class="p-4">Nama Promo</th>
                             <th class="p-4">Nilai Diskon</th>
@@ -79,6 +80,9 @@
                                 $status = $voucher->status();
                             @endphp
                             <tr class="hover:bg-slate-50/80 transition">
+                                <td class="p-4 text-center font-bold text-slate-400">
+                                    {{ ($vouchers->currentPage() - 1) * $vouchers->perPage() + $loop->iteration }}
+                                </td>
                                 <td class="p-4 font-bold">
                                     <span class="px-2.5 py-1 rounded-lg bg-orange-50 text-orange-700 border border-orange-200/80 font-mono text-xs font-extrabold uppercase">
                                         {{ $voucher->code }}

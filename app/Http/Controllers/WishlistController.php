@@ -45,11 +45,12 @@ class WishlistController extends Controller
             $added = true;
         }
 
-        if (request()->wantsJson()) {
+        if (request()->wantsJson() || request()->ajax()) {
             return response()->json([
-                'success' => true,
-                'message' => $message,
-                'added' => $added,
+                'success'    => true,
+                'message'    => $message,
+                'added'      => $added,
+                'wishlisted' => $added,
             ]);
         }
 

@@ -5,7 +5,7 @@
 
 @section('content')
 
-    <div class="max-w-2xl space-y-6" x-data="{ discountType: '{{ old('type', 'percentage') }}' }">
+    <div class="max-w-2xl mx-auto space-y-6" x-data="{ discountType: '{{ old('type', 'percentage') }}' }">
 
         <a href="{{ route('admin.vouchers.index') }}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

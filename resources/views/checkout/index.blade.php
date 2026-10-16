@@ -19,6 +19,9 @@
                     @if($appliedVoucher)
                         <input type="hidden" name="voucher_code" value="{{ $appliedVoucher->code }}">
                     @endif
+                    @foreach($carts as $c)
+                        <input type="hidden" name="selected[]" value="{{ $c->id }}">
+                    @endforeach
 
                     <div class="border-b border-neutral-100 pb-4 flex items-center justify-between">
                         <div>
@@ -53,6 +56,8 @@
                                 <input type="text" id="recipient_phone" name="recipient_phone" required
                                        value="{{ old('recipient_phone', auth()->user()->phone) }}"
                                        placeholder="Contoh: 081234567890"
+                                       maxlength="13"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 13)"
                                        class="w-full rounded-xl border-neutral-300 focus:ring-neutral-900 focus:border-neutral-900 p-3 font-bold bg-[#fcfcfc]">
                                 @error('recipient_phone')
                                     <p class="text-rose-500 text-[11px] font-bold mt-1">{{ $message }}</p>
@@ -68,15 +73,7 @@
 
                         <!-- Alamat Lengkap Pengiriman -->
                         <div>
-                            <label for="shipping_address" class="block uppercase tracking-wider text-neutral-900 font-extrabold mb-1">
-                                Alamat Lengkap Pengiriman <span class="text-rose-500">*</span>
-                            </label>
-                            <textarea id="shipping_address" name="shipping_address" rows="3" required
-                                      placeholder="Tuliskan nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota/kabupaten, serta kode pos tujuan pengiriman..."
-                                      class="w-full rounded-xl border-neutral-300 focus:ring-neutral-900 focus:border-neutral-900 p-3 font-medium">{{ old('shipping_address', auth()->user()->address) }}</textarea>
-                            @error('shipping_address')
-                                <p class="text-rose-500 text-[11px] font-bold mt-1">{{ $message }}</p>
-                            @enderror
+                            <x-address-input name="shipping_address" :value="old('shipping_address', auth()->user()->address)" />
                         </div>
 
                         <!-- Catatan Tambahan -->
@@ -201,9 +198,14 @@
 
                 <!-- Rincian Barang & Total Tagihan -->
                 <div class="bg-white rounded-2xl p-6 sm:p-8 border border-neutral-200 shadow-2xs space-y-6">
-                    <h3 class="text-base font-black uppercase tracking-wider text-neutral-900 border-b border-neutral-100 pb-4">
-                        Rincian Pesanan
-                    </h3>
+                    <div class="border-b border-neutral-100 pb-4 flex items-center justify-between">
+                        <h3 class="text-base font-black uppercase tracking-wider text-neutral-900">
+                            Rincian Pesanan
+                        </h3>
+                        <a href="{{ route('cart.index') }}" class="text-xs text-orange-600 font-extrabold hover:underline">
+                            ← Ubah Pilihan
+                        </a>
+                    </div>
 
                     <div class="divide-y divide-neutral-100 max-h-64 overflow-y-auto pr-1">
                         @foreach($carts as $cart)

@@ -5,15 +5,19 @@
         <!-- Image Card Backdrop -->
         <div class="relative bg-[#f8f8f8] rounded-xl overflow-hidden aspect-square flex items-center justify-center p-6 mb-4 border border-neutral-200/60 group-hover:border-neutral-400 transition duration-300">
             
-            <!-- Sale / Out of Stock Badge -->
-            <div class="absolute top-3 left-3 z-10">
+            <!-- Sale / Discount / Out of Stock Badge -->
+            <div class="absolute top-3 left-3 z-10 flex flex-col gap-1">
                 @if($product->isOutOfStock())
                     <span class="text-[11px] italic font-serif text-neutral-900 font-bold bg-white/90 px-2 py-0.5 rounded shadow-2xs">
                         habis!
                     </span>
+                @elseif($product->hasDiscount())
+                    <span class="text-[10px] font-black text-white bg-orange-500 px-2 py-0.5 rounded shadow-2xs uppercase tracking-wide">
+                        -{{ $product->discountPercent() }}%
+                    </span>
                 @elseif($product->isNew())
                     <span class="text-[11px] italic font-serif text-orange-600 font-bold bg-white/90 px-2 py-0.5 rounded shadow-2xs">
-                        sale!
+                        baru!
                     </span>
                 @endif
             </div>
@@ -31,6 +35,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </button>
+            @else
+                <a href="{{ route('login') }}"
+                   title="Login untuk tambah wishlist"
+                   class="wishlist-btn absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-2xs transition active:scale-95">
+                    <svg class="w-3.5 h-3.5 text-neutral-300 hover:text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </a>
             @endauth
 
             <!-- Product Image -->
@@ -75,11 +87,20 @@
                 <span class="text-neutral-400 font-normal text-[10px]">({{ $reviewCount > 0 ? number_format($avgRating, 1) : 'Belum ada' }})</span>
             </div>
 
-            <!-- Price -->
+            <!-- Price with Discount -->
             <div class="pt-1">
-                <p class="text-xs font-extrabold text-neutral-900">
-                    Rp {{ number_format($product->price, 0, ',', '.') }}
-                </p>
+                @if($product->hasDiscount())
+                    <p class="text-[10px] text-neutral-400 line-through font-semibold leading-none">
+                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs font-extrabold text-orange-600 leading-tight">
+                        Rp {{ number_format($product->finalPrice(), 0, ',', '.') }}
+                    </p>
+                @else
+                    <p class="text-xs font-extrabold text-neutral-900">
+                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                    </p>
+                @endif
             </div>
 
             <!-- Size Indicators -->

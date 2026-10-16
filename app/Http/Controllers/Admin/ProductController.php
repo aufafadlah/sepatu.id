@@ -53,6 +53,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'discount_percent' => 'nullable|integer|min:0|max:100',
+            'discount_price' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'image_url' => 'nullable|string',
             'variants' => 'required|array|min:1',
@@ -67,12 +69,24 @@ class ProductController extends Controller
             $imagePath = $request->input('image_url');
         }
 
+        $discountPercent = $validated['discount_percent'] ?? null;
+        $discountPrice = $validated['discount_price'] ?? null;
+
+        // Hitung diskon otomatis jika salah satu diisi
+        if ($discountPercent && !$discountPrice) {
+            $discountPrice = max(0, $validated['price'] - (($validated['price'] * $discountPercent) / 100));
+        } elseif ($discountPrice && !$discountPercent && $discountPrice < $validated['price']) {
+            $discountPercent = (int) round((($validated['price'] - $discountPrice) / $validated['price']) * 100);
+        }
+
         $product = Product::create([
             'category_id' => $validated['category_id'],
             'name' => $validated['name'],
             'slug' => Str::slug($validated['name']) . '-' . Str::random(4),
             'description' => $validated['description'],
             'price' => $validated['price'],
+            'discount_percent' => $discountPercent,
+            'discount_price' => $discountPrice,
             'image' => $imagePath,
         ]);
 
@@ -118,6 +132,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'discount_percent' => 'nullable|integer|min:0|max:100',
+            'discount_price' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'image_url' => 'nullable|string',
             'variants' => 'nullable|array',
@@ -134,12 +150,22 @@ class ProductController extends Controller
             $product->image = $request->input('image_url');
         }
 
+        $discountPercent = $request->filled('discount_percent') ? (int) $validated['discount_percent'] : null;
+        $discountPrice = $request->filled('discount_price') ? (float) $validated['discount_price'] : null;
+
+        if ($discountPercent && !$discountPrice) {
+            $discountPrice = max(0, $validated['price'] - (($validated['price'] * $discountPercent) / 100));
+        } elseif ($discountPrice && !$discountPercent && $discountPrice < $validated['price']) {
+            $discountPercent = (int) round((($validated['price'] - $discountPrice) / $validated['price']) * 100);
+        }
+
         $product->update([
             'category_id' => $validated['category_id'],
             'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']) . '-' . Str::random(4),
             'description' => $validated['description'],
             'price' => $validated['price'],
+            'discount_percent' => $discountPercent,
+            'discount_price' => $discountPrice,
         ]);
 
         if (! empty($validated['variants'])) {
@@ -163,11 +189,27 @@ class ProductController extends Controller
     }
 
     /**
-     * Hapus produk.
+     * Hapus produk (dengan pengecekan integritas relasi pesanan & dukungan AJAX).
      */
-    public function destroy(Product $product)
+    public function destroy(Request $request, Product $product)
     {
         $name = $product->name;
+
+        // Cek apakah produk memiliki varian yang sudah dipesan dalam order_items
+        $variantIds = $product->variants()->pluck('id');
+        $hasOrders = \App\Models\OrderItem::whereIn('product_variant_id', $variantIds)->exists();
+
+        if ($hasOrders) {
+            $errorMsg = "Produk \"{$name}\" tidak dapat dihapus permanen karena sudah tercatat dalam riwayat transaksi pesanan pelanggan. Anda dapat mengosongkan stoknya.";
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMsg,
+                ], 422);
+            }
+            return back()->with('error', $errorMsg);
+        }
+
         if ($product->image && Storage::disk('public')->exists($product->image)) {
             Storage::disk('public')->delete($product->image);
         }
@@ -176,6 +218,13 @@ class ProductController extends Controller
 
         auth()->user()->logActivity('delete_product', "Menghapus produk: {$name}");
 
-        return redirect()->route('admin.produk.index')->with('success', 'Produk berhasil dihapus!');
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Produk \"{$name}\" berhasil dihapus!",
+            ]);
+        }
+
+        return redirect()->route('admin.produk.index')->with('success', "Produk \"{$name}\" berhasil dihapus!");
     }
 }

@@ -101,23 +101,56 @@
                         </div>
                     </div>
 
-                    <!-- Section: Penjualan -->
+                    <!-- Section: Penjualan & Transaksi -->
                     <div>
                         <span class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">TRANSAKSI &amp; PROMO</span>
                         <div class="space-y-1">
+                            @php
+                                $sidebarUnreadOrders = \App\Models\Order::where('is_viewed_by_admin', false)->count();
+                            @endphp
                             <a href="{{ route('admin.pesanan.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.pesanan.*') ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
-                                <svg class="w-4 h-4 {{ request()->routeIs('admin.pesanan.*') ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                                <span>Pesanan Pelanggan</span>
+                               class="flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.pesanan.*') ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                                <div class="flex items-center gap-3">
+                                    <svg class="w-4 h-4 {{ request()->routeIs('admin.pesanan.*') ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                    <span>Pesanan Pelanggan</span>
+                                </div>
+                                <span id="sidebar-order-badge" class="{{ $sidebarUnreadOrders > 0 ? 'inline-flex' : 'hidden' }} items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
+                                    {{ $sidebarUnreadOrders }}
+                                </span>
                             </a>
+
+                            <!-- Filter Cepat Pesanan -->
+                            <div class="pl-7 space-y-0.5 pb-1">
+                                <a href="{{ route('admin.pesanan.index', ['tab' => 'unviewed']) }}"
+                                   class="block py-1 px-2 text-[11px] font-medium rounded-lg transition {{ request('tab') == 'unviewed' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50' }}">
+                                    • Belum Dilihat Admin
+                                </a>
+                                <a href="{{ route('admin.pesanan.index', ['payment_status' => 'pending_verification']) }}"
+                                   class="block py-1 px-2 text-[11px] font-medium rounded-lg transition {{ request('payment_status') == 'pending_verification' ? 'text-amber-600 font-bold bg-amber-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50' }}">
+                                    • Perlu Verifikasi TF
+                                </a>
+                                <a href="{{ route('admin.pesanan.index', ['tab' => 'unprinted']) }}"
+                                   class="block py-1 px-2 text-[11px] font-medium rounded-lg transition {{ request('tab') == 'unprinted' ? 'text-indigo-600 font-bold bg-indigo-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50' }}">
+                                    • Belum Cetak Struk
+                                </a>
+                            </div>
+
                             <a href="{{ route('admin.vouchers.index') }}"
                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.vouchers.*') ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                                 <svg class="w-4 h-4 {{ request()->routeIs('admin.vouchers.*') ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                                 </svg>
                                 <span>Voucher &amp; Diskon</span>
+                            </a>
+
+                            <a href="{{ route('admin.laporan.index') }}"
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.laporan.*') ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                                <svg class="w-4 h-4 {{ request()->routeIs('admin.laporan.*') ? 'text-indigo-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Laporan Penjualan</span>
                             </a>
                         </div>
                     </div>
@@ -317,7 +350,80 @@
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
         };
+
+        // Audio Alert Chime untuk Pesanan Baru Masuk
+        function playOrderAlertSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                
+                const osc1 = ctx.createOscillator();
+                const osc2 = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(587.33, now); // D5
+                osc1.frequency.setValueAtTime(880, now + 0.12); // A5
+
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(440, now);
+                osc2.frequency.setValueAtTime(659.25, now + 0.12);
+
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 0.6);
+                osc2.stop(now + 0.6);
+            } catch (e) {
+                // Audio context not allowed until interaction
+            }
+        }
+
+        // Real-Time New Order Poller
+        (function() {
+            let lastKnownUnread = {{ \App\Models\Order::where('is_viewed_by_admin', false)->count() }};
+            
+            async function pollNewOrders() {
+                try {
+                    const res = await fetch('{{ route('admin.pesanan.check-new') }}', {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!res.ok) return;
+                    const data = await res.json();
+
+                    const badge = document.getElementById('sidebar-order-badge');
+                    if (badge) {
+                        if (data.unviewed_count > 0) {
+                            badge.textContent = data.unviewed_count;
+                            badge.classList.remove('hidden');
+                            badge.classList.add('inline-flex');
+                        } else {
+                            badge.classList.add('hidden');
+                            badge.classList.remove('inline-flex');
+                        }
+                    }
+
+                    // Jika ada pesanan baru yang belum dilihat bertambah
+                    if (data.unviewed_count > lastKnownUnread && data.latest) {
+                        playOrderAlertSound();
+                        window.showToast(`🔥 Pesanan Baru Masuk! #${data.latest.id} dari ${data.latest.customer} (${data.latest.total})`, 'info');
+                    }
+
+                    lastKnownUnread = data.unviewed_count;
+                } catch (e) {}
+            }
+
+            // Jalankan polling setiap 12 detik
+            setInterval(pollNewOrders, 12000);
+        })();
     </script>
 
+    @stack('scripts')
 </body>
 </html>

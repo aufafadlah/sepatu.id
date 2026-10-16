@@ -67,7 +67,8 @@
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50/70 border-b border-slate-200/80 text-slate-400 uppercase font-bold tracking-wider text-[10px]">
                         <tr>
-                            <th class="p-4 w-20">ID</th>
+                            <th class="p-4 w-12 text-center">No.</th>
+                            <th class="p-4 w-16">ID</th>
                             <th class="p-4">Nama Kategori</th>
                             <th class="p-4">Jumlah Produk Terkait</th>
                             <th class="p-4">Katalog Produk</th>
@@ -77,6 +78,9 @@
                     <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
                         @forelse($categories as $category)
                             <tr class="hover:bg-slate-50/80 transition">
+                                <td class="p-4 text-center font-bold text-slate-400">
+                                    {{ ($categories->currentPage() - 1) * $categories->perPage() + $loop->iteration }}
+                                </td>
                                 <td class="p-4 text-slate-400 font-bold">
                                     <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-mono">
                                         #{{ $category->id }}

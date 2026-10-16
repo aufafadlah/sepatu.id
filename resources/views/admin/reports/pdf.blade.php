@@ -56,6 +56,9 @@
 
     <div class="header">
         <h1>SEPATU.ID — LAPORAN PENJUALAN OFFICIAL</h1>
+        @if(isset($periodLabel))
+            <p style="font-weight: bold; color: #333; margin-top: 4px;">Periode: {{ $periodLabel }}</p>
+        @endif
         <p>Dicetak pada: {{ now()->format('d F Y H:i:s') }} WIB</p>
     </div>
 

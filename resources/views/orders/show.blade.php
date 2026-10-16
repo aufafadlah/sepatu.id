@@ -13,6 +13,60 @@
             <span class="text-xs font-extrabold text-neutral-400">Order ID: #{{ $order->id }}</span>
         </div>
 
+        {{-- ========================================================= --}}
+        {{-- BANNER 1: Auto-Cancel 5 Hari (Transfer Belum Bayar)        --}}
+        {{-- ========================================================= --}}
+        @if($order->payment_method === 'transfer' && $order->payment_status === \App\Models\Order::PAYMENT_UNPAID && $order->status === \App\Models\Order::STATUS_PENDING)
+            @php $deadline = $order->created_at->addDays(5); $hoursLeft = now()->diffInHours($deadline, false); @endphp
+            <div class="mb-6 p-4 rounded-2xl bg-amber-50 border-2 border-amber-400 shadow flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-100 text-amber-700 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div class="flex-1 text-xs">
+                    <p class="font-black text-amber-900 uppercase tracking-wide text-sm mb-0.5">⚠️ Batas Waktu Pembayaran</p>
+                    <p class="text-amber-800 font-semibold leading-relaxed">
+                        Harap selesaikan pembayaran transfer dan upload buktinya sebelum
+                        <strong class="text-amber-950">{{ $deadline->isoFormat('dddd, D MMMM YYYY [pukul] HH:mm') }} WIB</strong>.
+                        @if($hoursLeft > 0)
+                            <span class="ml-1 inline-block bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded-full text-[11px]">
+                                Sisa: {{ floor($hoursLeft / 24) > 0 ? floor($hoursLeft / 24) . ' hari ' : '' }}{{ $hoursLeft % 24 }} jam
+                            </span>
+                        @else
+                            <span class="ml-1 inline-block bg-rose-200 text-rose-900 font-black px-2 py-0.5 rounded-full text-[11px]">Waktu Hampir Habis!</span>
+                        @endif
+                    </p>
+                    <p class="text-amber-600 font-medium mt-1">Pesanan yang melampaui batas waktu akan <strong>otomatis dibatalkan</strong> oleh sistem dan stok akan dikembalikan.</p>
+                </div>
+                <a href="#upload-bukti" class="shrink-0 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs uppercase tracking-wider transition">
+                    Upload Sekarang
+                </a>
+            </div>
+        @endif
+
+        {{-- ========================================================= --}}
+        {{-- BANNER 2: Pesanan Dibatalkan                               --}}
+        {{-- ========================================================= --}}
+        @if($order->status === 'dibatalkan')
+            <div class="mb-6 p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 flex items-start gap-4">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </div>
+                <div class="text-xs">
+                    <p class="font-black text-rose-900 uppercase tracking-wide text-sm mb-0.5">Pesanan Dibatalkan</p>
+                    <p class="text-rose-700 font-medium leading-relaxed">
+                        Pesanan ini telah dibatalkan.
+                        @if($order->payment_method === 'transfer')
+                            Jika pembayaran sudah terlanjur dikirim, silakan hubungi kami via WhatsApp untuk proses pengembalian dana (refund).
+                        @endif
+                        Stok produk yang dipesan sudah dikembalikan ke gudang. Anda dapat berbelanja kembali kapan saja.
+                    </p>
+                    <a href="{{ route('catalog.index') }}" class="inline-flex items-center gap-1.5 mt-2 text-rose-700 font-bold hover:text-rose-900 underline transition">
+                        Belanja Lagi →
+                    </a>
+                </div>
+            </div>
+        @endif
+
         <div class="bg-white rounded-2xl p-6 sm:p-10 border border-neutral-200 shadow-2xs space-y-8">
             <!-- Header Status -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100 pb-6">
@@ -24,16 +78,17 @@
                 <div class="flex flex-wrap items-center gap-2">
                     @php
                         $statusClasses = [
-                            'pending' => 'bg-amber-100 text-amber-900 border-amber-300',
-                            'diproses' => 'bg-blue-100 text-blue-900 border-blue-300',
-                            'dikirim' => 'bg-indigo-100 text-indigo-900 border-indigo-300',
-                            'selesai' => 'bg-emerald-100 text-emerald-900 border-emerald-300',
+                            'pending'     => 'bg-amber-100 text-amber-900 border-amber-300',
+                            'diproses'    => 'bg-blue-100 text-blue-900 border-blue-300',
+                            'dikirim'     => 'bg-indigo-100 text-indigo-900 border-indigo-300',
+                            'selesai'     => 'bg-emerald-100 text-emerald-900 border-emerald-300',
+                            'dibatalkan'  => 'bg-rose-100 text-rose-900 border-rose-300',
                         ];
 
                         $paymentClasses = [
-                            'unpaid' => 'bg-rose-100 text-rose-800 border-rose-300',
+                            'unpaid'               => 'bg-rose-100 text-rose-800 border-rose-300',
                             'pending_verification' => 'bg-amber-100 text-amber-900 border-amber-300',
-                            'paid' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                            'paid'                 => 'bg-emerald-100 text-emerald-800 border-emerald-300',
                         ];
                     @endphp
                     <span class="px-4 py-2 rounded-full text-xs font-extrabold border uppercase tracking-wider {{ $statusClasses[$order->status] ?? 'bg-neutral-100 text-neutral-800' }}">
@@ -134,7 +189,7 @@
             </div>
 
             <!-- Payment Upload / Verification Section -->
-            @if($order->payment_method === 'transfer')
+            @if($order->payment_method === 'transfer' && $order->status !== 'dibatalkan')
                 <div id="upload-bukti" class="p-6 rounded-2xl border border-neutral-200 bg-[#fbfbfb] space-y-4">
                     <h4 class="text-xs font-black text-neutral-900 uppercase tracking-widest">Bukti Pembayaran Transfer</h4>
                     
@@ -172,19 +227,40 @@
                 </div>
             @endif
 
-            <!-- Confirm Received Section for User -->
-            @if($order->status !== \App\Models\Order::STATUS_SELESAI)
-                <div class="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {{-- ========================================================= --}}
+            {{-- SECTION: Tombol Pesanan Diterima — Logika yang Benar       --}}
+            {{-- Hanya tampil jika status = 'dikirim' DAN payment = 'paid'  --}}
+            {{-- ========================================================= --}}
+            @if($order->status === 'dikirim' && $order->payment_status === \App\Models\Order::PAYMENT_PAID)
+                {{-- Pesanan sedang dalam pengiriman dan sudah dibayar: Tampilkan tombol konfirmasi --}}
+                <div class="p-6 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 space-y-3 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div>
-                        <h4 class="font-extrabold uppercase text-xs">Pesanan Dalam Pemrosesan / Pengiriman</h4>
-                        <p class="text-xs text-neutral-600 font-medium">Jika sepatu pesanan Anda sudah tiba dan diterima dengan selamat, klik tombol konfirmasi di samping untuk menyelesaikan pesanan &amp; memberikan ulasan.</p>
+                        <h4 class="font-extrabold uppercase text-xs flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Pesanan Dalam Pengiriman
+                        </h4>
+                        <p class="text-xs text-indigo-700 font-medium mt-1">Jika sepatu pesanan Anda sudah tiba dan diterima dengan selamat, klik tombol konfirmasi untuk menyelesaikan pesanan & memberikan ulasan.</p>
                     </div>
-                    <button type="button" @click="confirmModal = true" class="px-6 py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold uppercase tracking-widest transition shrink-0 flex items-center gap-1.5 shadow-md">
+                    <button type="button" @click="confirmModal = true" class="px-6 py-3.5 rounded-full bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold uppercase tracking-widest transition shrink-0 flex items-center gap-1.5 shadow-md">
                         <span>Pesanan Sudah Diterima</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                     </button>
                 </div>
-            @else
+
+            @elseif($order->status === 'pending' || $order->status === 'diproses')
+                {{-- Pesanan masih diproses: Informasi status perjalanan --}}
+                <div class="p-5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <div class="text-xs">
+                        <p class="font-extrabold uppercase tracking-wide mb-0.5">Pesanan Sedang Disiapkan</p>
+                        <p class="text-blue-700 font-medium leading-relaxed">Tombol konfirmasi terima barang akan aktif setelah pesanan dikirimkan oleh kurir dan pembayaran terverifikasi.</p>
+                    </div>
+                </div>
+
+            @elseif($order->status === 'selesai')
+                {{-- Pesanan sudah selesai --}}
                 <div class="p-6 rounded-2xl bg-emerald-50/60 border border-emerald-200 text-emerald-900 space-y-2 flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
@@ -230,7 +306,7 @@
                  x-transition:leave-start="opacity-100 transform scale-100"
                  x-transition:leave-end="opacity-0 transform scale-95"
                  class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-neutral-200 text-center space-y-5">
-                
+            
                 <!-- Icon -->
                 <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -15,12 +15,58 @@ class Product extends Model
         'slug',
         'description',
         'price',
+        'discount_percent',
+        'discount_price',
         'image',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'discount_price' => 'decimal:2',
+        'discount_percent' => 'integer',
     ];
+
+    /**
+     * Apakah produk memiliki diskon aktif.
+     */
+    public function hasDiscount(): bool
+    {
+        return ($this->discount_percent !== null && $this->discount_percent > 0)
+            || ($this->discount_price !== null && $this->discount_price > 0 && $this->discount_price < $this->price);
+    }
+
+    /**
+     * Dapatkan harga final produk setelah diskon (jika ada).
+     */
+    public function finalPrice(): float
+    {
+        if ($this->discount_price !== null && $this->discount_price > 0 && $this->discount_price < $this->price) {
+            return (float) $this->discount_price;
+        }
+
+        if ($this->discount_percent !== null && $this->discount_percent > 0) {
+            $cut = ($this->price * $this->discount_percent) / 100;
+            return max(0, (float) ($this->price - $cut));
+        }
+
+        return (float) $this->price;
+    }
+
+    /**
+     * Dapatkan persentase diskon terhitung.
+     */
+    public function discountPercent(): int
+    {
+        if ($this->discount_percent !== null && $this->discount_percent > 0) {
+            return (int) $this->discount_percent;
+        }
+
+        if ($this->discount_price !== null && $this->discount_price > 0 && $this->discount_price < $this->price) {
+            return (int) round((($this->price - $this->discount_price) / $this->price) * 100);
+        }
+
+        return 0;
+    }
 
     public function category()
     {

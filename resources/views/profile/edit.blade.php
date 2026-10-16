@@ -73,6 +73,8 @@
                     <div>
                         <label for="phone" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Nomor WhatsApp / Kontak</label>
                         <input id="phone" name="phone" type="text" value="{{ old('phone', $user->phone) }}" placeholder="Contoh: 081234567890"
+                               maxlength="13"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 13)"
                                class="w-full rounded-xl border border-slate-300 text-xs font-semibold p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50">
                         @error('phone')
                             <p class="text-rose-500 text-[11px] font-bold mt-1">{{ $message }}</p>
@@ -260,6 +262,8 @@
                             <div>
                                 <label for="phone" class="block text-xs font-extrabold uppercase tracking-wider text-neutral-900 mb-1">Nomor WhatsApp / HP</label>
                                 <input id="phone" name="phone" type="text" value="{{ old('phone', $user->phone) }}" placeholder="Contoh: 081234567890"
+                                       maxlength="13"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 13)"
                                        class="w-full rounded-xl border-neutral-300 text-xs font-semibold p-3 focus:ring-neutral-900 bg-[#f8f8f8]">
                                 @error('phone')
                                     <p class="text-rose-500 text-[11px] font-bold mt-1">{{ $message }}</p>
