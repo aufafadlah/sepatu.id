@@ -31,7 +31,29 @@ class ReviewController extends Controller
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'required|string|max:1000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'video' => 'nullable|mimes:mp4,mov,avi,webm|max:20480',
         ]);
+
+        $existing = Review::where('user_id', $user->id)
+            ->where('product_id', $product->id)
+            ->first();
+
+        $imagePath = $existing?->image;
+        if ($request->hasFile('image')) {
+            if ($imagePath && \Illuminate\Support\Facades\Storage::disk('public')->exists($imagePath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($imagePath);
+            }
+            $imagePath = $request->file('image')->store('reviews/images', 'public');
+        }
+
+        $videoPath = $existing?->video;
+        if ($request->hasFile('video')) {
+            if ($videoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($videoPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($videoPath);
+            }
+            $videoPath = $request->file('video')->store('reviews/videos', 'public');
+        }
 
         Review::updateOrCreate(
             [
@@ -41,9 +63,11 @@ class ReviewController extends Controller
             [
                 'rating' => $validated['rating'],
                 'comment' => $validated['comment'],
+                'image' => $imagePath,
+                'video' => $videoPath,
             ]
         );
 
-        return back()->with('success', 'Ulasan Anda berhasil disimpan. Terima kasih atas makluman dan tanggapan Anda!');
+        return back()->with('success', 'Ulasan dan media produk Anda berhasil disimpan. Terima kasih atas ulasannya!');
     }
 }

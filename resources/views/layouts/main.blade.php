@@ -21,15 +21,17 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+
+    @stack('styles')
 </head>
 <body class="h-full bg-white text-neutral-900 antialiased flex flex-col selection:bg-neutral-900 selection:text-white">
 
-    <!-- Top Announcement Bar -->
+    <!-- Top Announcement Bar (CMS Dynamic) -->
     <div class="bg-neutral-100 border-b border-neutral-200 text-neutral-800 text-[11px] py-2 px-4 text-center font-medium tracking-wide">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <span class="hidden sm:inline-block text-neutral-500">Garansi 100% Original &amp; Bebas Tukar Ukuran</span>
-            <span class="mx-auto sm:mx-0 font-semibold text-neutral-900">Gratis Ongkir Seluruh Indonesia Pembelian &gt; Rp 500.000</span>
-            <span class="hidden md:inline-block text-neutral-500">CS WhatsApp: 0812-3456-789</span>
+            <span class="hidden sm:inline-block text-neutral-500">{{ \App\Models\SiteSetting::get('announcement_left', 'Garansi 100% Original & Bebas Tukar Ukuran') }}</span>
+            <span class="mx-auto sm:mx-0 font-semibold text-neutral-900">{{ \App\Models\SiteSetting::get('announcement_bar', 'Gratis Ongkir Seluruh Indonesia Pembelian > Rp 500.000') }}</span>
+            <span class="hidden md:inline-block text-neutral-500">{{ \App\Models\SiteSetting::get('announcement_right', 'CS WhatsApp: 0812-3456-789') }}</span>
         </div>
     </div>
 
@@ -126,8 +128,11 @@
                                         Dashboard Admin
                                     </a>
                                 @endif
-                                <a href="{{ route('orders.index') }}" class="block px-4 py-2 text-neutral-700 hover:bg-neutral-50 font-medium">
-                                    Pesanan Saya
+                                <a href="{{ route('orders.index', ['tab' => 'active']) }}" class="block px-4 py-2 text-neutral-700 hover:bg-neutral-50 font-medium">
+                                    Pesanan Aktif
+                                </a>
+                                <a href="{{ route('orders.index', ['tab' => 'history']) }}" class="block px-4 py-2 text-neutral-700 hover:bg-neutral-50 font-medium">
+                                    Riwayat Pesanan
                                 </a>
                                 <a href="{{ route('wishlist.index') }}" class="block px-4 py-2 text-neutral-700 hover:bg-neutral-50 font-medium">
                                     Wishlist Saya
@@ -190,18 +195,81 @@
     </header>
 
     <!-- Flash Messages -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-3">
         @if (session('success'))
-            <div x-data="{ show: true }" x-show="show" class="mb-4 p-4 rounded-xl bg-neutral-100 border border-neutral-300 text-neutral-900 text-xs font-medium flex items-center justify-between">
-                <span>{{ session('success') }}</span>
-                <button @click="show = false" class="text-neutral-500 hover:text-neutral-900 ml-4">✕</button>
+            <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-950 text-xs font-semibold flex items-center justify-between shadow-2xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <span>{{ session('success') }}</span>
+                </div>
+                <button @click="show = false" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-100 transition ml-4 shrink-0" title="Tutup">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
             </div>
         @endif
 
         @if (session('error'))
-            <div x-data="{ show: true }" x-show="show" class="mb-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-medium flex items-center justify-between">
-                <span>{{ session('error') }}</span>
-                <button @click="show = false" class="text-rose-500 hover:text-rose-900 ml-4">✕</button>
+            <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="p-4 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-950 text-xs font-semibold flex items-center justify-between shadow-2xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <span>{{ session('error') }}</span>
+                </div>
+                <button @click="show = false" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100 transition ml-4 shrink-0" title="Tutup">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+        @endif
+
+        @if (session('warning'))
+            <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-950 text-xs font-semibold flex items-center justify-between shadow-2xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                    <span>{{ session('warning') }}</span>
+                </div>
+                <button @click="show = false" class="p-1.5 rounded-lg text-amber-600 hover:bg-amber-100 transition ml-4 shrink-0" title="Tutup">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+        @endif
+
+        @if (session('info') || session('status'))
+            <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200/80 text-indigo-950 text-xs font-semibold flex items-center justify-between shadow-2xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <span>{{ session('info') ?? session('status') }}</span>
+                </div>
+                <button @click="show = false" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-100 transition ml-4 shrink-0" title="Tutup">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="p-4 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-950 text-xs font-semibold flex items-start justify-between shadow-2xs">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                    <div>
+                        <p class="font-bold text-rose-900 mb-1">Terdapat beberapa kesalahan pengisian:</p>
+                        <ul class="list-disc list-inside space-y-0.5 text-rose-700 font-medium">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+                <button @click="show = false" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100 transition ml-4 shrink-0" title="Tutup">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
             </div>
         @endif
     </div>
@@ -270,5 +338,57 @@
         </div>
     </footer>
 
+    <!-- Global Floating Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4"></div>
+
+    <script>
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const icons = {
+                success: `<svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>`,
+                error: `<svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`,
+                warning: `<svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`,
+                info: `<svg class="w-4 h-4 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+            };
+
+            const colors = {
+                success: 'bg-neutral-900 border-neutral-700 text-white',
+                error: 'bg-rose-950 border-rose-800 text-rose-100',
+                warning: 'bg-amber-950 border-amber-800 text-amber-100',
+                info: 'bg-neutral-900 border-neutral-700 text-white'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto p-4 rounded-2xl border shadow-2xl flex items-center justify-between gap-3 text-xs font-bold transition-all duration-300 transform translate-y-4 opacity-0 ${colors[type] || colors.success}`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    ${icons[type] || icons.success}
+                    <span>${message}</span>
+                </div>
+                <button type="button" class="text-neutral-400 hover:text-white transition shrink-0 ml-2" onclick="this.parentElement.remove()">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            });
+
+            // Auto remove
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        };
+    </script>
+
+    @stack('scripts')
 </body>
 </html>

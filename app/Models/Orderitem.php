@@ -31,4 +31,12 @@ class OrderItem extends Model
     {
         return $this->belongsTo(ProductVariant::class);
     }
+
+    /**
+     * Hitung subtotal harga untuk item pesanan ini.
+     */
+    public function subtotal()
+    {
+        return $this->price_at_purchase * $this->qty;
+    }
 }

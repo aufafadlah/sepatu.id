@@ -17,6 +17,8 @@ class User extends Authenticatable
         'password',
         'role',
         'google_id',
+        'phone',
+        'address',
     ];
 
     protected $hidden = [
@@ -61,42 +63,14 @@ class User extends Authenticatable
 
     // ---------- Helper Role ----------
 
-    public function isSuperAdmin(): bool
+    public function isAdmin(): bool
     {
-        return $this->role === 'super_admin';
-    }
-
-    public function isAdminProduk(): bool
-    {
-        return $this->role === 'admin_produk';
-    }
-
-    public function isAdminGudang(): bool
-    {
-        return $this->role === 'admin_gudang';
-    }
-
-    public function isAdminPesanan(): bool
-    {
-        return $this->role === 'admin_pesanan';
+        return $this->role === 'admin' || $this->role === 'super_admin';
     }
 
     public function isCustomer(): bool
     {
         return $this->role === 'user';
-    }
-
-    /**
-     * True kalau role termasuk salah satu jenis admin (bukan pelanggan).
-     */
-    public function isAdmin(): bool
-    {
-        return in_array($this->role, [
-            'super_admin',
-            'admin_produk',
-            'admin_gudang',
-            'admin_pesanan',
-        ]);
     }
 
     /**

@@ -59,6 +59,21 @@ class CartController extends Controller
             ]);
         }
 
+        // Jika AJAX (dari tombol "Tambah ke Keranjang" di detail produk), kembalikan JSON
+        if ($request->ajax() || $request->wantsJson()) {
+            $cartCount = Cart::where('user_id', $user->id)->sum('qty');
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil ditambahkan ke keranjang!',
+                'cart_count' => $cartCount,
+            ]);
+        }
+
+        // Jika buy_now=1, langsung ke checkout khusus item ini (item lain tetap aman di keranjang)
+        if ($request->input('buy_now') == '1') {
+            return redirect()->route('checkout.index', ['selected' => [$cartItem->id]]);
+        }
+
         return redirect()->route('cart.index')->with('success', 'Produk berhasil ditambahkan ke keranjang!');
     }
 

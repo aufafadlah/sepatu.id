@@ -26,6 +26,20 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'phone' => ['nullable', 'regex:/^[0-9]{12,13}$/'],
+            'address' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
+     * Get custom error messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'phone.regex' => 'Nomor WhatsApp / telepon harus berupa angka sebanyak 12 sampai 13 digit.',
         ];
     }
 }

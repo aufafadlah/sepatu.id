@@ -3,36 +3,79 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 
 class StockController extends Controller
 {
     /**
-     * Tampilkan kelola stok fisik per varian ukuran (Panel Admin Gudang).
+     * Tampilkan kelola stok fisik per produk & varian ukuran terkelompok (Panel Admin Gudang).
      */
     public function index(Request $request)
     {
-        $query = ProductVariant::with(['product.category']);
+        $query = Product::with(['category', 'variants' => function ($q) {
+            $q->orderBy('size', 'asc');
+        }]);
 
         if ($request->boolean('low_stock')) {
-            $query->where('stock', '<', 5);
+            $query->whereHas('variants', function ($q) {
+                $q->where('stock', '<', 5);
+            });
         }
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->whereHas('product', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            });
+            $query->where('name', 'like', "%{$search}%");
         }
 
-        $variants = $query->orderBy('stock', 'asc')->paginate(15)->withQueryString();
+        $products = $query->latest()->paginate(10)->withQueryString();
+        $allProducts = Product::orderBy('name', 'asc')->get();
 
-        return view('admin.stock.index', compact('variants'));
+        return view('admin.stock.index', compact('products', 'allProducts'));
     }
 
     /**
-     * Update stok varian ukuran tertentu.
+     * Tambahkan atau restock varian ukuran baru untuk produk.
+     */
+    public function storeVariant(Request $request)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'size' => 'required|integer|min:30|max:50',
+            'stock' => 'required|integer|min:0',
+        ]);
+
+        $variant = ProductVariant::updateOrCreate(
+            [
+                'product_id' => $validated['product_id'],
+                'size' => $validated['size'],
+            ],
+            [
+                'stock' => $validated['stock'],
+            ]
+        );
+
+        $productName = $variant->product->name ?? 'Produk';
+
+        auth()->user()->logActivity(
+            'add_variant_stock',
+            "Menambah/memperbarui varian ukuran {$variant->size} untuk produk {$productName} (stok: {$variant->stock} pasang)"
+        );
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Stok {$productName} ukuran {$variant->size} berhasil ditambahkan ({$variant->stock} pasang)!",
+                'variant' => $variant,
+            ]);
+        }
+
+        return back()->with('success', "Stok {$productName} ukuran {$variant->size} berhasil ditambahkan!");
+    }
+
+    /**
+     * Update stok varian ukuran tertentu via AJAX / Form.
      */
     public function update(Request $request, ProductVariant $variant)
     {
@@ -45,11 +88,21 @@ class StockController extends Controller
 
         $variant->update(['stock' => $newStock]);
 
+        $productName = $variant->product->name ?? 'Produk';
+
         auth()->user()->logActivity(
             'update_stock',
-            "Mengubah stok {$variant->product->name} (Ukuran {$variant->size}) dari {$oldStock} menjadi {$newStock} pasang"
+            "Mengubah stok {$productName} (Ukuran {$variant->size}) dari {$oldStock} menjadi {$newStock} pasang"
         );
 
-        return back()->with('success', "Stok {$variant->product->name} ukuran {$variant->size} berhasil diperbarui.");
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Stok {$productName} EUR {$variant->size} berhasil diperbarui menjadi {$newStock} pasang.",
+                'new_stock' => $newStock,
+            ]);
+        }
+
+        return back()->with('success', "Stok {$productName} ukuran {$variant->size} berhasil diperbarui.");
     }
 }

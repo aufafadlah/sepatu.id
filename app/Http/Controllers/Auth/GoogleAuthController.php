@@ -47,6 +47,10 @@ class GoogleAuthController extends Controller
                 Auth::login($user);
             }
 
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!');
+            }
+
             return redirect()->route('catalog.index')->with('success', 'Selamat datang! Berhasil masuk dengan akun Google.');
         } catch (\Exception $e) {
             return redirect()->route('login')->with('error', 'Gagal terhubung dengan Google. Silakan coba lagi.');
